@@ -9,6 +9,12 @@ class AddGroceryItemScreen extends StatefulWidget {
 }
 
 class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  void _handleSubmit() {
+    _formKey.currentState!.validate();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,6 +24,7 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Form(
+          key: _formKey,
           child: Column(
             children: [
               TextFormField(
@@ -26,6 +33,16 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
                 ),
                 autofocus: true,
                 maxLength: 50,
+                validator: (value) {
+                  if (value == null ||
+                      value.isEmpty ||
+                      value.trim().length <= 1 ||
+                      value.trim().length > 50) {
+                    return 'Name must be between 2 and 50 characters long';
+                  }
+
+                  return null;
+                },
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -37,6 +54,15 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
                       ),
                       initialValue: '1',
                       keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null ||
+                            value.isEmpty ||
+                            int.tryParse(value) == null ||
+                            int.parse(value) < 0) {
+                          return 'Quantity must be a positive number';
+                        }
+                        return null;
+                      },
                     ),
                   ),
                   const SizedBox(
@@ -44,6 +70,7 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
                   ),
                   Expanded(
                     child: DropdownButtonFormField(
+                      value: categories.values.last,
                       items: [
                         for (final category in categories.entries)
                           DropdownMenuItem(
@@ -67,6 +94,29 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
                   ),
                 ],
               ),
+              const SizedBox(
+                height: 24,
+              ),
+              Row(
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      _formKey.currentState!.reset();
+                    },
+                    style: TextButton.styleFrom(
+                      foregroundColor: Theme.of(context).colorScheme.error,
+                    ),
+                    child: const Text(
+                      'Reset',
+                    ),
+                  ),
+                  const Spacer(),
+                  ElevatedButton(
+                    onPressed: _handleSubmit,
+                    child: const Text('Save'),
+                  ),
+                ],
+              )
             ],
           ),
         ),
