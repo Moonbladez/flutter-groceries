@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_shopping/data/categories.dart';
 import 'package:flutter_shopping/models/models.dart';
+import "package:http/http.dart" as http;
 
 class AddGroceryItemScreen extends StatefulWidget {
   const AddGroceryItemScreen({super.key});
@@ -15,16 +18,37 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
   String _enteredName = '';
   int _enteredQuantity = 1;
   Category _selectedCategory = categories[Categories.other] as Category;
+  bool _isSubmitting = false;
 
-  void _handleSubmit() {
+  void _handleSubmit() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isSubmitting = true;
+      });
       _formKey.currentState!.save();
+      final Uri url = Uri.https(
+        "bulu-grocery-list-default-rtdb.europe-west1.firebasedatabase.app",
+        "/grocery-items.json",
+      );
+      final http.Response response = await http.post(
+        url,
+        body: json.encode(
+          {
+            "name": _enteredName,
+            "quantity": _enteredQuantity,
+            "category": _selectedCategory.title,
+          },
+        ),
+      );
+      final Map<String, dynamic> data = json.decode(response.body);
+      if (!context.mounted) return;
+
       Navigator.of(context).pop(
         GroceryItem(
+          id: data["name"],
           name: _enteredName,
           quantity: _enteredQuantity,
           category: _selectedCategory,
-          id: DateTime.now().toString(),
         ),
       );
     }
@@ -125,7 +149,7 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
                 children: [
                   TextButton(
                     onPressed: () {
-                      _formKey.currentState!.reset();
+                      _isSubmitting ? null : _formKey.currentState!.reset();
                     },
                     style: TextButton.styleFrom(
                       foregroundColor: Theme.of(context).colorScheme.error,
@@ -136,8 +160,16 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
                   ),
                   const Spacer(),
                   ElevatedButton(
-                    onPressed: _handleSubmit,
-                    child: const Text('Save'),
+                    onPressed: _isSubmitting ? null : _handleSubmit,
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            height: 16,
+                            width: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 1,
+                            ),
+                          )
+                        : const Text('Submit'),
                   ),
                 ],
               )
