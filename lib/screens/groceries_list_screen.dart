@@ -9,7 +9,7 @@ import 'package:flutter_shopping/screens/screens.dart';
 import 'package:flutter_shopping/widgets/widgets.dart';
 
 class GroceriesListScreen extends StatefulWidget {
-  const GroceriesListScreen({Key? key});
+  const GroceriesListScreen({super.key});
 
   @override
   State<GroceriesListScreen> createState() => _GroceriesListScreenState();
@@ -87,6 +87,13 @@ class _GroceriesListScreenState extends State<GroceriesListScreen> {
   }
 
   void _handleDeleteGroceryItem(GroceryItem groceryItem) {
+    final Uri url = Uri.https(
+      "bulu-grocery-list-default-rtdb.europe-west1.firebasedatabase.app",
+      "/grocery-items/${groceryItem.id}.json",
+    );
+
+    http.delete(url);
+
     setState(() {
       _groceryItems.remove(groceryItem);
     });
