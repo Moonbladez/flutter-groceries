@@ -39,6 +39,13 @@ class _GroceriesListScreenState extends State<GroceriesListScreen> {
         throw Exception('Failed to load grocery items');
       }
 
+      if (response.body == "null") {
+        setState(() {
+          _isLoading = false;
+        });
+        return;
+      }
+
       final Map<String, dynamic> data = json.decode(response.body);
 
       final List<GroceryItem> loadedGroceryItems = [];
@@ -86,17 +93,27 @@ class _GroceriesListScreenState extends State<GroceriesListScreen> {
     }
   }
 
-  void _handleDeleteGroceryItem(GroceryItem groceryItem) {
+  void _handleDeleteGroceryItem(GroceryItem groceryItem) async {
     final Uri url = Uri.https(
       "bulu-grocery-list-default-rtdb.europe-west1.firebasedatabase.app",
       "/grocery-items/${groceryItem.id}.json",
     );
 
-    http.delete(url);
+    try {
+      final response = await http.delete(url);
 
-    setState(() {
-      _groceryItems.remove(groceryItem);
-    });
+      if (response.statusCode >= 400) {
+        _errorMessage = 'Failed to delete grocery item';
+      }
+
+      setState(() {
+        _groceryItems.remove(groceryItem);
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    }
   }
 
   @override
