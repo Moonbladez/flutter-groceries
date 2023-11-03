@@ -1,10 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_shopping/models/grocery_item.dart';
 import 'package:flutter_shopping/screens/screens.dart';
 import 'package:flutter_shopping/widgets/widgets.dart';
-import "package:flutter_shopping/data/dummy_items.dart";
 
-class GroceriesListScreen extends StatelessWidget {
+class GroceriesListScreen extends StatefulWidget {
   const GroceriesListScreen({super.key});
+
+  @override
+  State<GroceriesListScreen> createState() => _GroceriesListScreenState();
+}
+
+class _GroceriesListScreenState extends State<GroceriesListScreen> {
+  final List<GroceryItem> _groceryItems = [];
+
+  void _handleAddGroceryItem() async {
+    final newGroceryItem = await Navigator.of(context).push<GroceryItem>(
+      MaterialPageRoute(
+        builder: (context) => const AddGroceryItemScreen(),
+      ),
+    );
+
+    if (newGroceryItem != null) {
+      setState(() {
+        _groceryItems.add(newGroceryItem);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -12,23 +33,20 @@ class GroceriesListScreen extends StatelessWidget {
       appBar: AppBar(
         actions: [
           IconButton(
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AddGroceryItemScreen(),
-              ),
-            ),
+            onPressed: _handleAddGroceryItem,
             icon: const Icon(Icons.add),
           ),
         ],
         title: const Text('Groceries List'),
       ),
-      body: ListView.builder(
-        itemBuilder: (context, index) => GroceryListItem(
-          groceryItem: groceryItems[index],
-        ),
-        itemCount: groceryItems.length,
-      ),
+      body: _groceryItems.isNotEmpty
+          ? ListView.builder(
+              itemBuilder: (context, index) => GroceryListItem(
+                groceryItem: _groceryItems[index],
+              ),
+              itemCount: _groceryItems.length,
+            )
+          : const EmptyGroceryList(),
     );
   }
 }

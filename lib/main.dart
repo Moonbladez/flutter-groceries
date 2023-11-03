@@ -12,9 +12,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Shopping',
       theme: theme,
-      home: GroceriesListScreen(),
+      home: const GroceriesListScreen(),
     );
   }
 }

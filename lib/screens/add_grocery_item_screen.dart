@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_shopping/data/categories.dart';
+import 'package:flutter_shopping/models/models.dart';
 
 class AddGroceryItemScreen extends StatefulWidget {
   const AddGroceryItemScreen({super.key});
@@ -11,8 +12,22 @@ class AddGroceryItemScreen extends StatefulWidget {
 class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  String _enteredName = '';
+  int _enteredQuantity = 1;
+  Category _selectedCategory = categories[Categories.other] as Category;
+
   void _handleSubmit() {
-    _formKey.currentState!.validate();
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      Navigator.of(context).pop(
+        GroceryItem(
+          name: _enteredName,
+          quantity: _enteredQuantity,
+          category: _selectedCategory,
+          id: DateTime.now().toString(),
+        ),
+      );
+    }
   }
 
   @override
@@ -43,6 +58,8 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
 
                   return null;
                 },
+                onSaved: (newValue) => _enteredName = newValue!,
+                initialValue: _enteredName,
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -52,7 +69,7 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
                       decoration: const InputDecoration(
                         labelText: 'Quantity',
                       ),
-                      initialValue: '1',
+                      initialValue: _enteredQuantity.toString(),
                       keyboardType: TextInputType.number,
                       validator: (value) {
                         if (value == null ||
@@ -63,6 +80,8 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
                         }
                         return null;
                       },
+                      onSaved: (newValue) =>
+                          _enteredQuantity = int.parse(newValue!),
                     ),
                   ),
                   const SizedBox(
@@ -70,7 +89,8 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
                   ),
                   Expanded(
                     child: DropdownButtonFormField(
-                      value: categories.values.last,
+                      isDense: true,
+                      value: _selectedCategory,
                       items: [
                         for (final category in categories.entries)
                           DropdownMenuItem(
@@ -89,7 +109,11 @@ class _AddGroceryItemScreenState extends State<AddGroceryItemScreen> {
                             ),
                           ),
                       ],
-                      onChanged: (value) {},
+                      onChanged: (newValue) {
+                        setState(() {
+                          _selectedCategory = newValue as Category;
+                        });
+                      },
                     ),
                   ),
                 ],
